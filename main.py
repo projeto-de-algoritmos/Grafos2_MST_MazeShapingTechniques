@@ -58,6 +58,45 @@ def menu_principal():
 
         pygame.display.update()
 
+def menu_algoritmo():
+    while True:
+        tela.blit(fundo_menu, (0, 0))
+
+        posicao_mouse = pygame.mouse.get_pos()
+
+        texto_menu = get_fonte(40).render("Selecione o algoritmo", True, "#ffffff")
+        rect_menu = texto_menu.get_rect(center=(790, 75))
+
+        botao_kruskal = Botao(fundo=None, posicao=(790, 300), texto_base="KRUSKAL", fonte=get_fonte(75), cor_base="#e3e3e3", cor_selecao="#ffffff")
+        botao_prim = Botao(fundo=None, posicao=(790, 450), texto_base="PRIM", fonte=get_fonte(75), cor_base="#e3e3e3", cor_selecao="#ffffff")
+        botao_dfs = Botao(fundo=None, posicao=(790, 600), texto_base="DFS", fonte=get_fonte(75), cor_base="#e3e3e3", cor_selecao="#ffffff")
+
+        tela.blit(texto_menu, rect_menu)
+
+        for botao in [botao_kruskal, botao_prim, botao_dfs]:
+            botao.mudarCor(posicao_mouse)
+            botao.atualizar(tela)
+
+        algoritmo_escolhido = -1
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if botao_kruskal.checarEntrada(posicao_mouse):
+                    algoritmo_escolhido = 0
+                    return algoritmo_escolhido
+                if botao_prim.checarEntrada(posicao_mouse):
+                    algoritmo_escolhido = 1
+                    return algoritmo_escolhido
+                if botao_dfs.checarEntrada(posicao_mouse):
+                    algoritmo_escolhido = 2
+                    return algoritmo_escolhido
+                
+        pygame.display.update()
+
 
 def jogar():
     tela = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -101,7 +140,8 @@ def jogar():
 if __name__ == "__main__":
     opcao_escolhida = menu_principal()
     if opcao_escolhida == 0:
-        jogar()
+        algoritmo = menu_algoritmo()
+        # jogar(algoritmo)
     elif opcao_escolhida == 1:
         pygame.quit()
         sys.exit()
