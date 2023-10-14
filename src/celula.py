@@ -53,6 +53,19 @@ class Celula:
 
         return choice(vizinhos) if vizinhos else False
 
+    def get_rects(self, TILE):
+        rects = []
+        x, y = self.x * TILE, self.y * TILE
+        if self.paredes['cima']:
+            rects.append(pygame.Rect((x, y), (TILE, self.espessura)))
+        if self.paredes['direita']:
+            rects.append(pygame.Rect((x + TILE, y), (self.espessura, TILE)))
+        if self.paredes['baixo']:
+            rects.append(pygame.Rect((x, y + TILE), (TILE, self.espessura)))
+        if self.paredes['esquerda']:
+            rects.append(pygame.Rect((x, y), (self.espessura, TILE)))
+        return rects
+
 
 def remove_paredes(atual, proxima):
     dx = atual.x - proxima.x
