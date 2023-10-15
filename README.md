@@ -15,31 +15,31 @@ Este projeto busca implementar um jogo para resolver labirintos gerados aleatori
 ### Tela inicial
 ![screenshot da tela inicial](assets/screenshots/screenshot_menu_principal.png)
 
-<center>Imagem 1: Tela inicial do jogo (Fonte: autores, 2023).</center>
+<p align="center">Imagem 1: Tela inicial do jogo (Fonte: autores, 2023).</p>
 
 ### Tela de geração do labirinto
 ![screenshot da tela de geração](assets/screenshots/screenshot_geracao_labirinto.png)
 
-<center>Imagem 2: Tela de geração do labirinto (Fonte: autores, 2023).</center>
+<p align="center">Imagem 2: Tela de geração do labirinto (Fonte: autores, 2023).</p>
 
 ### Tela de jogo
 ![screenshot da tela de jogo](assets/screenshots/screenshot_jogando.png)
 
-<center>Imagem 3: Tela de jogo (Fonte: autores, 2023).</center>
+<p align="center">Imagem 3: Tela de jogo (Fonte: autores, 2023).</p>
 
 ### Tela de resultado 
 ![screenshot da tela inicial](assets/screenshots/screenshot_derrota.png)
 
-<center>Imagem 4: Tela de resultado (Fonte: autores, 2023).</center>
+<p align="center">Imagem 4: Tela de resultado (Fonte: autores, 2023).</p>
 
 ## Instalação 
 **Linguagem**:
 
 <p align="left"><a href="https://www.python.org" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="python" width="40" height="40"/> </a></p>
 
-Para executar este localmente, certifique-se que você possui o Python (>= 3.10.12) instalado em sua máquina. Caso não possua, você pode baixá-lo [no site oficial](https://www.python.org/downloads/).
+Para executar este jogo localmente, certifique-se que você possui o Python (>= 3.10.12) instalado em sua máquina. Caso não possua, você pode baixá-lo [no site oficial](https://www.python.org/downloads/).
 
-É necessário também ter o gerenciador de pacotes pip (>= 22.0.2) instalado. Caso não possua, você pode baixá-lo [aqui](https://pip.pypa.io/en/stable/installing/).
+É necessário também ter o gerenciador de pacotes pip (>= 22.0.2) instalado. Caso não possua, você pode baixá-lo [aqui](https://pypi.org/project/pip/).
 
 MazeShapingTechniques foi desenvolvido com a biblioteca [pygame](https://www.pygame.org/news). Para instalá-la, execute o seguinte comando no terminal:
 
