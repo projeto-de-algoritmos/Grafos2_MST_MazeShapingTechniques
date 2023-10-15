@@ -37,6 +37,17 @@ def som_jogador_mov(efeitos_sonoros):
         efeito = pygame.mixer.Sound("../assets/jogador_mov.mp3")
         efeito.play()
 
+def som_derrota(efeitos_sonoros):
+    if efeitos_sonoros:
+        efeito = pygame.mixer.Sound("../assets/lose.mp3")
+        efeito.play()
+
+def som_vitoria(efeitos_sonoros):
+    if efeitos_sonoros:
+        efeito = pygame.mixer.Sound("../assets/win.mp3")
+        efeito.play()
+
+
 def menu_principal():
     global trilha_sonora, efeitos_sonoros
 
@@ -398,9 +409,11 @@ def fimdejogo(relogio, recorde):
 
     # Verifica se o jogador ganhou ou perdeu
     if relogio < 0:
+        som_derrota(efeitos_sonoros)
         texto = get_fonte(60).render("Você perdeu, que pena :(", True, "#ffffff")
         rect = texto.get_rect(center=(790, 75))
     else:
+        som_vitoria(efeitos_sonoros)
         texto = get_fonte(60).render("Parabéns, você ganhou!", True, "#ffffff")
         rect = texto.get_rect(center=(790, 75))
 
