@@ -14,6 +14,7 @@ pygame.display.set_caption("MazeShapingTechniques - Menu Principal")
 
 fundo_menu = pygame.image.load("../assets/fundo_menu.png")
 
+pausado = False
 
 def get_fonte(tamanho):
     return pygame.font.Font("../assets/font.ttf", tamanho)
@@ -81,6 +82,33 @@ def menu_algoritmo():
                     return 1
                 if botao_dfs.checarEntrada(posicao_mouse):
                     return 2
+
+        pygame.display.update()
+
+
+def tela_pausado():
+    global pausado
+
+    texto_menu = get_fonte(75).render("PAUSADO", True, "#ffffff")
+    rect_menu = texto_menu.get_rect(center=(790, 75))
+
+    botao_continuar = Botao(fundo=None, posicao=(790, 300), texto_base="Continuar", fonte=get_fonte(75), cor_base="#e3e3e3", cor_selecao="#ffffff")
+    while True:
+        tela.blit(fundo_menu, (0, 0))
+        tela.blit(texto_menu, rect_menu)
+
+        posicao_mouse = pygame.mouse.get_pos()
+        botao_continuar.mudarCor(posicao_mouse)
+        botao_continuar.atualizar(tela)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if botao_continuar:
+                    pausado = not pausado
+                    return None
 
         pygame.display.update()
 
@@ -214,53 +242,66 @@ def jogar(matriz_celulas, tela_labirinto):
 
     fonte = get_fonte(40)
 
-    while True:
-        tela.blit(fundo_menu, (0, 0))
-        tela.blit(tela_labirinto, (0, 0))
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            if event.type == pygame.USEREVENT:
-                relogio -= 1
-
-        # Desenha as celulas
-        [celula.desenhar(tela_labirinto, cor="white", TILE=TILE) for celula in matriz_celulas]
-
-        # Desenha as celulas inicial e a de objetivo
-        celula_inicial.preencher_celula(tela=tela, cor='red', TILE=TILE)
-        objetivo.preencher_celula(tela=tela, cor='green', TILE=TILE)
-
-        # Movimentacao do jogador
-        teclas_pressionadas = pygame.key.get_pressed()
-        for tecla, direcao in direcoes.items():
-            if teclas_pressionadas[tecla] and not checa_colisao(rect_jogador, *direcao, rect_paredes):
-                direcao_atual = direcao
-                break
-        if not checa_colisao(rect_jogador, *direcao_atual, rect_paredes):
-            rect_jogador.move_ip(direcao_atual)
-
-        # Verifica se o tempo acabou
-        if relogio < 0:
-            break
+    # Cria botão de pause
+    global pausado
+    botao_pause = Botao(fundo=None, posicao=(1430, 350), texto_base="Pause", fonte=get_fonte(30), cor_base="#e3e3e3", cor_selecao="#ffffff")
     
-        # Desenha o jogador
-        tela.blit(imagem_jogador, rect_jogador)
+    while True:
+        if pausado: tela_pausado()
+        else:
+            tela.blit(fundo_menu, (0, 0))
+            tela.blit(tela_labirinto, (0, 0))
 
-        if rect_jogador.colliderect(rect_objetivo):
-            break
+            posicao_mouse = pygame.mouse.get_pos()
+            botao_pause.mudarCor(posicao_mouse)
+            botao_pause.atualizar(tela)
 
-        # Desenha o tempo e o recorde
-        texto_relogio = fonte.render(f'{relogio}', True, pygame.Color('white'))
-        tela.blit(texto_tempo, rect_tempo)
-        tela.blit(texto_relogio, texto_relogio.get_rect(center=(WIDTH + 150, 100)))
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                if event.type == pygame.USEREVENT:
+                    relogio -= 1
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if botao_pause.checarEntrada(posicao_mouse):
+                        pausado = not pausado
 
-        tela.blit(texto_recorde, rect_recorde)
-        tela.blit(texto_valor_recorde, rect_valor_recorde)
+            # Desenha as celulas
+            [celula.desenhar(tela_labirinto, cor="white", TILE=TILE) for celula in matriz_celulas]
 
-        pygame.display.update()
-        clock.tick(FPS)
+            # Desenha as celulas inicial e a de objetivo
+            celula_inicial.preencher_celula(tela=tela, cor='red', TILE=TILE)
+            objetivo.preencher_celula(tela=tela, cor='green', TILE=TILE)
+
+            # Movimentacao do jogador
+            teclas_pressionadas = pygame.key.get_pressed()
+            for tecla, direcao in direcoes.items():
+                if teclas_pressionadas[tecla] and not checa_colisao(rect_jogador, *direcao, rect_paredes):
+                    direcao_atual = direcao
+                    break
+            if not checa_colisao(rect_jogador, *direcao_atual, rect_paredes):
+                rect_jogador.move_ip(direcao_atual)
+
+            # Verifica se o tempo acabou
+            if relogio < 0:
+                break
+        
+            # Desenha o jogador
+            tela.blit(imagem_jogador, rect_jogador)
+
+            if rect_jogador.colliderect(rect_objetivo):
+                break
+
+            # Desenha o tempo e o recorde
+            texto_relogio = fonte.render(f'{relogio}', True, pygame.Color('white'))
+            tela.blit(texto_tempo, rect_tempo)
+            tela.blit(texto_relogio, texto_relogio.get_rect(center=(WIDTH + 150, 100)))
+
+            tela.blit(texto_recorde, rect_recorde)
+            tela.blit(texto_valor_recorde, rect_valor_recorde)
+
+            pygame.display.update()
+            clock.tick(FPS)
 
     return relogio, recorde
 
