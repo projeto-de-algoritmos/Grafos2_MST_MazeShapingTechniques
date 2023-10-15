@@ -6,6 +6,7 @@ pygame.font.init()
 pygame.display.init()
 pygame.mixer.init()
 
+
 WIDTH, HEIGHT = 1280, 720
 TILE = 40
 clock = pygame.time.Clock()
@@ -21,31 +22,28 @@ pausado = False
 # Define a trilha sonora
 trilha_sonora = True
 efeitos_sonoros = True
-botao_som_click = pygame.mixer.Sound("../assets/button_click.wav")
+som_clique = pygame.mixer.Sound("../assets/button_click.wav")
 
 
 def get_fonte(tamanho):
     return pygame.font.Font("../assets/font.ttf", tamanho)
 
-def som_clique(efeitos_sonoros):
+
+def tocar_som(efeitos_sonoros, efeito):
     if efeitos_sonoros:
-        efeito = pygame.mixer.Sound("../assets/button_click.wav")
         efeito.play()
 
-def som_jogador_mov(efeitos_sonoros):
-    if efeitos_sonoros:
-        efeito = pygame.mixer.Sound("../assets/jogador_mov.mp3")
-        efeito.play()
 
 def som_derrota(efeitos_sonoros):
     if efeitos_sonoros:
         efeito = pygame.mixer.Sound("../assets/lose.mp3")
-        efeito.play()
+        pygame.mixer.Channel(0).play(efeito)
+
 
 def som_vitoria(efeitos_sonoros):
     if efeitos_sonoros:
         efeito = pygame.mixer.Sound("../assets/win.mp3")
-        efeito.play()
+        pygame.mixer.Channel(0).play(efeito)
 
 
 def menu_principal():
@@ -76,17 +74,19 @@ def menu_principal():
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                som_clique(efeitos_sonoros)
                 if botao_play.checarEntrada(posicao_mouse):
+                    tocar_som(efeitos_sonoros, som_clique)
                     return
                 if botao_sair.checarEntrada(posicao_mouse):
                     pygame.quit()
                     sys.exit()
                 if botao_trilha_sonora.checarEntrada(posicao_mouse):
+                    tocar_som(efeitos_sonoros, som_clique)
                     trilha_sonora = not trilha_sonora
                     if trilha_sonora: pygame.mixer.music.unpause()
                     else: pygame.mixer.music.pause()
                 if botao_efeitos_sonoros.checarEntrada(posicao_mouse):
+                    tocar_som(efeitos_sonoros, som_clique)
                     efeitos_sonoros = not efeitos_sonoros
 
         pygame.display.update()
@@ -118,15 +118,18 @@ def menu_algoritmo():
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                som_clique(efeitos_sonoros)
                 if botao_kruskal.checarEntrada(posicao_mouse):
+                    tocar_som(efeitos_sonoros, som_clique)
                     return 0
                 if botao_prim.checarEntrada(posicao_mouse):
+                    tocar_som(efeitos_sonoros, som_clique)
                     return 1
                 if botao_dfs.checarEntrada(posicao_mouse):
+                    tocar_som(efeitos_sonoros, som_clique)
                     return 2
 
         pygame.display.update()
+
 
 def menu_dificuldade():
     global efeitos_sonoros
@@ -154,12 +157,14 @@ def menu_dificuldade():
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                som_clique(efeitos_sonoros)
                 if facil.checarEntrada(posicao_mouse):
+                    tocar_som(efeitos_sonoros, som_clique)
                     return 99
                 if medio.checarEntrada(posicao_mouse):
+                    tocar_som(efeitos_sonoros, som_clique)
                     return 50
                 if dificil.checarEntrada(posicao_mouse):
+                    tocar_som(efeitos_sonoros, som_clique)
                     return 30
 
         pygame.display.update()
@@ -185,8 +190,8 @@ def tela_pausado():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                som_clique(efeitos_sonoros)
-                if botao_continuar:
+                if botao_continuar.checarEntrada(posicao_mouse):
+                    tocar_som(efeitos_sonoros, som_clique)
                     pausado = not pausado
                     pygame.mixer.music.unpause()
                     return None
@@ -326,6 +331,9 @@ def jogar(matriz_celulas, tela_labirinto, qtd_tempo):
     # Cria botão de pause
     global pausado, efeitos_sonoros
     botao_pause = Botao(fundo=None, posicao=(1430, 350), texto_base="Pause", fonte=get_fonte(30), cor_base="#e3e3e3", cor_selecao="#ffffff")
+
+    #
+    som_jogador = pygame.mixer.Sound("../assets/jogador_mov.mp3")
     
     while True:
         if pausado: tela_pausado()
@@ -344,8 +352,8 @@ def jogar(matriz_celulas, tela_labirinto, qtd_tempo):
                 if event.type == pygame.USEREVENT:
                     relogio -= 1
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    som_clique(efeitos_sonoros)
                     if botao_pause.checarEntrada(posicao_mouse):
+                        tocar_som(efeitos_sonoros, som_clique)
                         pausado = not pausado
                         pygame.mixer.music.pause()
 
@@ -360,7 +368,8 @@ def jogar(matriz_celulas, tela_labirinto, qtd_tempo):
             teclas_pressionadas = pygame.key.get_pressed()
             for tecla, direcao in direcoes.items():
                 if teclas_pressionadas[tecla] and not checa_colisao(rect_jogador, *direcao, rect_paredes):
-                    som_jogador_mov(efeitos_sonoros)
+                    if direcao != direcao_atual:
+                        tocar_som(efeitos_sonoros, som_jogador)
                     direcao_atual = direcao
                     break
             if not checa_colisao(rect_jogador, *direcao_atual, rect_paredes):
@@ -373,6 +382,7 @@ def jogar(matriz_celulas, tela_labirinto, qtd_tempo):
             # Desenha o jogador
             tela.blit(imagem_jogador, rect_jogador)
 
+            # Verifica se o jogador chegou ao objetivo
             if rect_jogador.colliderect(rect_objetivo):
                 break
 
@@ -387,32 +397,33 @@ def jogar(matriz_celulas, tela_labirinto, qtd_tempo):
             pygame.display.update()
             clock.tick(FPS)
 
-    return relogio, recorde
+    return relogio, recorde, qtd_tempo
 
 
-def fimdejogo(relogio, recorde):
+def fimdejogo(relogio, recorde, qtd_tempo):
     global efeitos_sonoros
 
     # Define o novo recorde
     if relogio >= 0:
-        recorde = min(int(recorde), 90 - relogio)
+        recorde = min(int(recorde), qtd_tempo - relogio)
         with open('recorde', 'w') as f:
             f.write(str(recorde))
 
     # Define os textos do tempo e do recorde
-    texto_tempo = get_fonte(55).render(f"Seu tempo: {90 - relogio if relogio >= 0 else 0}", True, "#ffffff")
+    texto_tempo = get_fonte(55).render(f"Seu tempo: {qtd_tempo - relogio if relogio >= 0 else 0}", True, "#ffffff")
     rect_tempo = texto_tempo.get_rect(center=(790, 250))
     texto_record = get_fonte(55).render(f"Recorde: {recorde}", True, "#ffffff")
-    rect_record = texto_record.get_rect(center=(790, 300))
+    rect_record = texto_record.get_rect(center=(790, 330))
 
     pygame.display.set_caption("MazeShapingTechniques - Fim de Jogo")
 
     # Verifica se o jogador ganhou ou perdeu
+    pygame.mixer.music.pause()
     if relogio < 0:
         som_derrota(efeitos_sonoros)
         texto = get_fonte(60).render("Você perdeu, que pena :(", True, "#ffffff")
         rect = texto.get_rect(center=(790, 75))
-    else:
+    else:   
         som_vitoria(efeitos_sonoros)
         texto = get_fonte(60).render("Parabéns, você ganhou!", True, "#ffffff")
         rect = texto.get_rect(center=(790, 75))
@@ -420,7 +431,10 @@ def fimdejogo(relogio, recorde):
     botao_play = Botao(fundo=None, posicao=(790, 550), texto_base="JOGAR DE NOVO", fonte=get_fonte(55), cor_base="#e3e3e3", cor_selecao="#ffffff")
     botao_sair = Botao(fundo=None, posicao=(790, 650), texto_base="SAIR", fonte=get_fonte(55), cor_base="#e3e3e3", cor_selecao="#ffffff")
 
+
     while True:
+        if not pygame.mixer.Channel(0).get_busy(): pygame.mixer.music.unpause()
+
         tela.blit(fundo_menu, (0, 0))
 
         posicao_mouse = pygame.mouse.get_pos()
@@ -428,6 +442,7 @@ def fimdejogo(relogio, recorde):
         tela.blit(texto, rect)
         tela.blit(texto_tempo, rect_tempo)
         tela.blit(texto_record, rect_record)
+
 
         for botao in [botao_play, botao_sair]:
             botao.mudarCor(posicao_mouse)
@@ -439,12 +454,14 @@ def fimdejogo(relogio, recorde):
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                som_clique(efeitos_sonoros)
                 if botao_play.checarEntrada(posicao_mouse):
+                    tocar_som(efeitos_sonoros, som_clique)
                     return
                 if botao_sair.checarEntrada(posicao_mouse):
                     pygame.quit()
                     sys.exit()
+
+        
 
         pygame.display.update()
 
@@ -452,10 +469,11 @@ def fimdejogo(relogio, recorde):
 if __name__ == "__main__":
     while True:
         pygame.mixer.music.load("../assets/soundtrack.mp3")
+        pygame.mixer.music.set_volume(0.5)
         pygame.mixer.music.play(-1)
         menu_principal()
         algoritmo = menu_algoritmo()
         qtd_tempo = menu_dificuldade()
         matriz_celulas, tela_labirinto = criar_labirinto(algoritmo, qtd_tempo)
-        relogio, recorde = jogar(matriz_celulas, tela_labirinto, qtd_tempo)
-        fimdejogo(relogio, recorde)
+        relogio, recorde, qtd_tempo = jogar(matriz_celulas, tela_labirinto, qtd_tempo)
+        fimdejogo(relogio, recorde, qtd_tempo)
