@@ -32,6 +32,11 @@ def som_clique(efeitos_sonoros):
         efeito = pygame.mixer.Sound("../assets/button_click.wav")
         efeito.play()
 
+def som_jogador_mov(efeitos_sonoros):
+    if efeitos_sonoros:
+        efeito = pygame.mixer.Sound("../assets/jogador_mov.mp3")
+        efeito.play()
+
 def menu_principal():
     global trilha_sonora, efeitos_sonoros
 
@@ -241,7 +246,7 @@ def jogar(matriz_celulas, tela_labirinto):
 
     celula_inicial = matriz_celulas[0]
     objetivo = matriz_celulas[-1]
-    print(objetivo.x * TILE, objetivo.y * TILE, TILE, TILE)
+    # print(objetivo.x * TILE, objetivo.y * TILE, TILE, TILE)
     # rect_objetivo = pygame.Rect(objetivo.x * TILE, objetivo.y * TILE, TILE, TILE)
     rect_objetivo = pygame.Rect(objetivo.x * TILE, objetivo.y * TILE + 0.50 * TILE, TILE, TILE * 0.50)
 
@@ -308,6 +313,7 @@ def jogar(matriz_celulas, tela_labirinto):
             teclas_pressionadas = pygame.key.get_pressed()
             for tecla, direcao in direcoes.items():
                 if teclas_pressionadas[tecla] and not checa_colisao(rect_jogador, *direcao, rect_paredes):
+                    som_jogador_mov(efeitos_sonoros)
                     direcao_atual = direcao
                     break
             if not checa_colisao(rect_jogador, *direcao_atual, rect_paredes):
