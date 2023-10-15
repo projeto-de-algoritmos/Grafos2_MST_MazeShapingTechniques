@@ -117,6 +117,42 @@ def menu_algoritmo():
 
         pygame.display.update()
 
+def menu_dificuldade():
+    global efeitos_sonoros
+
+    texto_menu = get_fonte(75).render("Dificuldade", True, "#ffffff")
+    rect_menu = texto_menu.get_rect(center=(790, 75))
+
+    facil = Botao(fundo=None, posicao=(790, 300), texto_base="Fácil", fonte=get_fonte(40), cor_base="#e3e3e3", cor_selecao="#ffffff")
+    medio = Botao(fundo=None, posicao=(790, 450), texto_base="Médio", fonte=get_fonte(40), cor_base="#e3e3e3", cor_selecao="#ffffff")
+    dificil = Botao(fundo=None, posicao=(790, 600), texto_base="Difícil", fonte=get_fonte(40), cor_base="#e3e3e3", cor_selecao="#ffffff")
+
+    while True:
+        tela.blit(fundo_menu, (0, 0))
+        tela.blit(texto_menu, rect_menu)
+
+        posicao_mouse = pygame.mouse.get_pos()
+
+        for botao in [facil, medio, dificil]:
+            botao.mudarCor(posicao_mouse)
+            botao.atualizar(tela)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                som_clique(efeitos_sonoros)
+                if facil.checarEntrada(posicao_mouse):
+                    return 99
+                if medio.checarEntrada(posicao_mouse):
+                    return 50
+                if dificil.checarEntrada(posicao_mouse):
+                    return 30
+
+        pygame.display.update()
+
 
 def tela_pausado():
     global pausado, efeitos_sonoros
@@ -147,7 +183,7 @@ def tela_pausado():
         pygame.display.update()
 
 
-def criar_labirinto(algoritmo):
+def criar_labirinto(algoritmo, qtd_tempo):
     pygame.display.set_caption("MazeShapingTechniques - Modelando Labirinto")
 
     FPS = 300
@@ -177,7 +213,7 @@ def criar_labirinto(algoritmo):
     global texto_tempo
     texto_tempo = get_fonte(40).render('TEMPO', True, pygame.Color('white'))
     rect_tempo = texto_tempo.get_rect(center=(WIDTH + 150, 50))
-    texto_relogio = get_fonte(40).render('60', True, pygame.Color('white'))
+    texto_relogio = get_fonte(40).render(f'{qtd_tempo}', True, pygame.Color('white'))
     rect_texto_relogio = texto_relogio.get_rect(center=(WIDTH + 150, 100))
 
     # Define o texto do recorde
@@ -239,7 +275,7 @@ def checa_colisao(rect_jogador, x, y, rect_paredes):
     return True
 
 
-def jogar(matriz_celulas, tela_labirinto):
+def jogar(matriz_celulas, tela_labirinto, qtd_tempo):
     pygame.display.set_caption("MazeShapingTechniques - Jogo")
 
     FPS = 60
@@ -251,7 +287,7 @@ def jogar(matriz_celulas, tela_labirinto):
     rect_objetivo = pygame.Rect(objetivo.x * TILE, objetivo.y * TILE + 0.50 * TILE, TILE, TILE * 0.50)
 
     # Inicia o relogio em 90 e lanca um evento a cada segundo para atualizar ele
-    relogio = 90
+    relogio = qtd_tempo
     pygame.time.set_timer(pygame.USEREVENT, 1000)
 
     global recorde
@@ -406,6 +442,7 @@ if __name__ == "__main__":
         pygame.mixer.music.play(-1)
         menu_principal()
         algoritmo = menu_algoritmo()
-        matriz_celulas, tela_labirinto = criar_labirinto(algoritmo)
-        relogio, recorde = jogar(matriz_celulas, tela_labirinto)
+        qtd_tempo = menu_dificuldade()
+        matriz_celulas, tela_labirinto = criar_labirinto(algoritmo, qtd_tempo)
+        relogio, recorde = jogar(matriz_celulas, tela_labirinto, qtd_tempo)
         fimdejogo(relogio, recorde)
