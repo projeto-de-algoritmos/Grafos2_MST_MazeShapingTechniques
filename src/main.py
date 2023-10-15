@@ -4,6 +4,7 @@ from botao import Botao
 
 pygame.font.init()
 pygame.display.init()
+pygame.mixer.init()
 
 WIDTH, HEIGHT = 1280, 720
 TILE = 40
@@ -14,13 +15,26 @@ pygame.display.set_caption("MazeShapingTechniques - Menu Principal")
 
 fundo_menu = pygame.image.load("../assets/fundo_menu.png")
 
+# Define o estado do jogo (pausado: bool)
 pausado = False
+
+# Define a trilha sonora
+trilha_sonora = True
+efeitos_sonoros = True
+botao_som_click = pygame.mixer.Sound("../assets/button_click.wav")
+
 
 def get_fonte(tamanho):
     return pygame.font.Font("../assets/font.ttf", tamanho)
 
+def som_clique(efeitos_sonoros):
+    if efeitos_sonoros:
+        efeito = pygame.mixer.Sound("../assets/button_click.wav")
+        efeito.play()
 
 def menu_principal():
+    global trilha_sonora, efeitos_sonoros
+
     texto_menu = get_fonte(70).render("MazeShapingTechniques", True, "#ffffff")
     rect_menu = texto_menu.get_rect(center=(790, 100))
 
@@ -28,12 +42,15 @@ def menu_principal():
     botao_sair = Botao(fundo=None, posicao=(790, 550), texto_base="SAIR", fonte=get_fonte(75), cor_base="#e3e3e3", cor_selecao="#ffffff")
 
     while True:
+        botao_trilha_sonora = Botao(fundo=None, posicao=(1300, 630), texto_base="sons: on" if trilha_sonora else "sons: off", fonte=get_fonte(30), cor_base="#e3e3e3", cor_selecao="#ffffff")
+        botao_efeitos_sonoros = Botao(fundo=None, posicao=(1350, 660), texto_base="efeitos: on" if efeitos_sonoros else "efeitos: off", fonte=get_fonte(30), cor_base="#e3e3e3", cor_selecao="#ffffff")
+
         tela.blit(fundo_menu, (0, 0))
         tela.blit(texto_menu, rect_menu)
 
         posicao_mouse = pygame.mouse.get_pos()
 
-        for botao in [botao_play, botao_sair]:
+        for botao in [botao_play, botao_sair, botao_trilha_sonora, botao_efeitos_sonoros]:
             botao.mudarCor(posicao_mouse)
             botao.atualizar(tela)
 
@@ -43,16 +60,25 @@ def menu_principal():
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                som_clique(efeitos_sonoros)
                 if botao_play.checarEntrada(posicao_mouse):
                     return
                 if botao_sair.checarEntrada(posicao_mouse):
                     pygame.quit()
                     sys.exit()
+                if botao_trilha_sonora.checarEntrada(posicao_mouse):
+                    trilha_sonora = not trilha_sonora
+                    if trilha_sonora: pygame.mixer.music.unpause()
+                    else: pygame.mixer.music.pause()
+                if botao_efeitos_sonoros.checarEntrada(posicao_mouse):
+                    efeitos_sonoros = not efeitos_sonoros
 
         pygame.display.update()
 
 
 def menu_algoritmo():
+    global efeitos_sonoros
+
     texto_menu = get_fonte(40).render("Selecione o algoritmo", True, "#ffffff")
     rect_menu = texto_menu.get_rect(center=(790, 75))
 
@@ -76,6 +102,7 @@ def menu_algoritmo():
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                som_clique(efeitos_sonoros)
                 if botao_kruskal.checarEntrada(posicao_mouse):
                     return 0
                 if botao_prim.checarEntrada(posicao_mouse):
@@ -87,7 +114,7 @@ def menu_algoritmo():
 
 
 def tela_pausado():
-    global pausado
+    global pausado, efeitos_sonoros
 
     texto_menu = get_fonte(75).render("PAUSADO", True, "#ffffff")
     rect_menu = texto_menu.get_rect(center=(790, 75))
@@ -106,8 +133,10 @@ def tela_pausado():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
+                som_clique(efeitos_sonoros)
                 if botao_continuar:
                     pausado = not pausado
+                    pygame.mixer.music.unpause()
                     return None
 
         pygame.display.update()
@@ -243,7 +272,7 @@ def jogar(matriz_celulas, tela_labirinto):
     fonte = get_fonte(40)
 
     # Cria botão de pause
-    global pausado
+    global pausado, efeitos_sonoros
     botao_pause = Botao(fundo=None, posicao=(1430, 350), texto_base="Pause", fonte=get_fonte(30), cor_base="#e3e3e3", cor_selecao="#ffffff")
     
     while True:
@@ -263,8 +292,10 @@ def jogar(matriz_celulas, tela_labirinto):
                 if event.type == pygame.USEREVENT:
                     relogio -= 1
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    som_clique(efeitos_sonoros)
                     if botao_pause.checarEntrada(posicao_mouse):
                         pausado = not pausado
+                        pygame.mixer.music.pause()
 
             # Desenha as celulas
             [celula.desenhar(tela_labirinto, cor="white", TILE=TILE) for celula in matriz_celulas]
@@ -307,6 +338,8 @@ def jogar(matriz_celulas, tela_labirinto):
 
 
 def fimdejogo(relogio, recorde):
+    global efeitos_sonoros
+
     # Define o novo recorde
     if relogio >= 0:
         recorde = min(int(recorde), 90 - relogio)
@@ -351,6 +384,7 @@ def fimdejogo(relogio, recorde):
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                som_clique(efeitos_sonoros)
                 if botao_play.checarEntrada(posicao_mouse):
                     return
                 if botao_sair.checarEntrada(posicao_mouse):
@@ -362,6 +396,8 @@ def fimdejogo(relogio, recorde):
 
 if __name__ == "__main__":
     while True:
+        pygame.mixer.music.load("../assets/soundtrack.mp3")
+        pygame.mixer.music.play(-1)
         menu_principal()
         algoritmo = menu_algoritmo()
         matriz_celulas, tela_labirinto = criar_labirinto(algoritmo)
