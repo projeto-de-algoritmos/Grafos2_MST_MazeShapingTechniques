@@ -101,8 +101,7 @@ def menu_algoritmo():
     rect_menu = texto_menu.get_rect(center=(790, 75))
 
     botao_kruskal = Botao(fundo=None, posicao=(790, 300), texto_base="KRUSKAL", fonte=get_fonte(75), cor_base="#e3e3e3", cor_selecao="#ffffff")
-    botao_prim = Botao(fundo=None, posicao=(790, 450), texto_base="PRIM", fonte=get_fonte(75), cor_base="#e3e3e3", cor_selecao="#ffffff")
-    botao_dfs = Botao(fundo=None, posicao=(790, 600), texto_base="DFS", fonte=get_fonte(75), cor_base="#e3e3e3", cor_selecao="#ffffff")
+    botao_dfs = Botao(fundo=None, posicao=(790, 450), texto_base="DFS", fonte=get_fonte(75), cor_base="#e3e3e3", cor_selecao="#ffffff")
 
     while True:
         tela.blit(fundo_menu, (0, 0))
@@ -110,7 +109,7 @@ def menu_algoritmo():
 
         posicao_mouse = pygame.mouse.get_pos()
 
-        for botao in [botao_kruskal, botao_prim, botao_dfs]:
+        for botao in [botao_kruskal, botao_dfs]:
             botao.mudarCor(posicao_mouse)
             botao.atualizar(tela)
 
@@ -123,12 +122,9 @@ def menu_algoritmo():
                 if botao_kruskal.checarEntrada(posicao_mouse):
                     tocar_som(efeitos_sonoros, som_clique)
                     return 0
-                if botao_prim.checarEntrada(posicao_mouse):
-                    tocar_som(efeitos_sonoros, som_clique)
-                    return 1
                 if botao_dfs.checarEntrada(posicao_mouse):
                     tocar_som(efeitos_sonoros, som_clique)
-                    return 2
+                    return 1
 
         pygame.display.update()
 
@@ -346,8 +342,6 @@ def criar_labirinto(algoritmo, qtd_tempo):
         case (0):
             return kruskal(matriz_celulas, tela_labirinto)
         case (1):
-            return dfs(matriz_celulas, tela_labirinto)
-        case (2):
             return dfs(matriz_celulas, tela_labirinto)
 
 

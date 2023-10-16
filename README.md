@@ -9,7 +9,7 @@
 | 21/1039297 | Bruno Martins Valério Bomfim |
 
 ## Sobre 
-Este projeto busca implementar um jogo para resolver labirintos gerados aleatoriamente por meio de algoritmos de produção de MSTs (Minimum Spanning Trees) como o de Prim e de Kruskal.
+Este projeto busca implementar um jogo para resolver labirintos gerados aleatoriamente por meio de adpatações de algoritmos de busca em grafos e de produção de MSTs (Minimum Spanning Trees), como a busca em profundidade (DFS) e o algoritmo de Kruskal.
 
 ## Screenshots
 ### Tela inicial
