@@ -32,11 +32,11 @@ class Celula:
 
     def checar_celula(self, x, y, matriz_celulas, linhas, colunas):
         procura_indice = lambda x, y: x + y * colunas
-        if x < 0 or x > colunas - 1 or y < 0 or y > linhas - 1 or matriz_celulas[procura_indice(x, y)].visitada is True:
+        if x < 0 or x > colunas - 1 or y < 0 or y > linhas - 1 or matriz_celulas[procura_indice(x, y)].visitada:
             return False
         return matriz_celulas[procura_indice(x, y)]
 
-    def checar_vizinhos(self, matriz_celulas, linhas, colunas):
+    def checar_vizinhos(self, matriz_celulas, linhas, colunas, aleatorio=True):
         vizinhos = []
         cima = self.checar_celula(self.x, self.y - 1, matriz_celulas, linhas, colunas)
         direita = self.checar_celula(self.x + 1, self.y, matriz_celulas, linhas, colunas)
@@ -51,7 +51,11 @@ class Celula:
         if esquerda:
             vizinhos.append(esquerda)
 
-        return choice(vizinhos) if vizinhos else False
+        if aleatorio:
+            return choice(vizinhos) if vizinhos else False 
+        else:
+            return vizinhos
+
 
     def get_rects(self, TILE):
         rects = []

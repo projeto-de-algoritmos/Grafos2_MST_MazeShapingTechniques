@@ -1,6 +1,7 @@
 import pygame, sys
 from celula import *
 from botao import Botao
+from collections import defaultdict
 
 pygame.font.init()
 pygame.display.init()
@@ -9,15 +10,16 @@ pygame.mixer.init()
 
 WIDTH, HEIGHT = 1280, 720
 TILE = 40
+# WIDTH, HEIGHT = 900, 900
+# TILE = 300
+colunas, linhas = WIDTH // TILE, HEIGHT // TILE
+
 clock = pygame.time.Clock()
 
 tela = pygame.display.set_mode((WIDTH + 300, HEIGHT))
 pygame.display.set_caption("MazeShapingTechniques - Menu Principal")
 
 fundo_menu = pygame.image.load("../assets/fundo_menu.png")
-
-# Define o estado do jogo (pausado: bool)
-pausado = False
 
 # Define a trilha sonora
 trilha_sonora = True
@@ -170,76 +172,15 @@ def menu_dificuldade():
         pygame.display.update()
 
 
-def tela_pausado():
-    global pausado, efeitos_sonoros
-
-    texto_menu = get_fonte(75).render("PAUSADO", True, "#ffffff")
-    rect_menu = texto_menu.get_rect(center=(790, 75))
-
-    botao_continuar = Botao(fundo=None, posicao=(790, 300), texto_base="Continuar", fonte=get_fonte(75), cor_base="#e3e3e3", cor_selecao="#ffffff")
-    while True:
-        tela.blit(fundo_menu, (0, 0))
-        tela.blit(texto_menu, rect_menu)
-
-        posicao_mouse = pygame.mouse.get_pos()
-        botao_continuar.mudarCor(posicao_mouse)
-        botao_continuar.atualizar(tela)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if botao_continuar.checarEntrada(posicao_mouse):
-                    tocar_som(efeitos_sonoros, som_clique)
-                    pausado = not pausado
-                    pygame.mixer.music.unpause()
-                    return None
-
-        pygame.display.update()
-
-
-def criar_labirinto(algoritmo, qtd_tempo):
-    pygame.display.set_caption("MazeShapingTechniques - Modelando Labirinto")
-
-    FPS = 300
-
-    # Preenche a tela inteira e tela do labirinto
-    tela_labirinto = pygame.Surface((WIDTH, HEIGHT))
-    tela.blit(fundo_menu, (0, 0))
-    tela.blit(tela_labirinto, (0, 0))
-
-    # Gera a matriz de celulas
-    colunas, linhas = WIDTH // TILE, HEIGHT // TILE
-
-    matriz_celulas = [Celula(coluna, linha) for linha in range(linhas) for coluna in range(colunas)]
-
-    # Define as celula atual como a primeira e a celula de objetivo com a ultima, alem de uma pilha pra dfs
+def dfs(matriz_celulas, tela_labirinto):
     celula_atual = matriz_celulas[0]
     objetivo = matriz_celulas[-1]
     pilha = []
 
     contador_parada = 1
 
-    with open('recorde') as f:
-        global recorde
-        recorde = f.readline()
+    global FPS, texto_tempo, rect_tempo, texto_relogio, rect_texto_relogio, texto_recorde, rect_recorde, texto_valor_recorde, rect_valor_recorde
 
-    # Define o texto do tempo
-    global texto_tempo
-    texto_tempo = get_fonte(40).render('TEMPO', True, pygame.Color('white'))
-    rect_tempo = texto_tempo.get_rect(center=(WIDTH + 150, 50))
-    texto_relogio = get_fonte(40).render(f'{qtd_tempo}', True, pygame.Color('white'))
-    rect_texto_relogio = texto_relogio.get_rect(center=(WIDTH + 150, 100))
-
-    # Define o texto do recorde
-    global texto_recorde, rect_recorde, texto_valor_recorde, rect_valor_recorde
-    texto_recorde = get_fonte(40).render('RECORDE', True, pygame.Color('white'))
-    rect_recorde = texto_recorde.get_rect(center=(WIDTH + 150, 200))
-    texto_valor_recorde = get_fonte(40).render(f'{recorde}', True, pygame.Color('white'))
-    rect_valor_recorde = texto_valor_recorde.get_rect(center=(WIDTH + 150, 250))
-
-    # Roda ate finalizar a matriz
     while contador_parada != len(matriz_celulas):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -284,6 +225,132 @@ def criar_labirinto(algoritmo, qtd_tempo):
     return matriz_celulas, tela_labirinto
 
 
+def kruskal(matriz_celulas, tela_labirinto):
+    # Define a estrutura union-find como um dicionário e seus respectivos metodos
+    union_find = defaultdict(list)
+
+    def find(union_find, elemento):
+        if union_find[elemento][0] != elemento:
+            union_find[elemento][0] = find(union_find, union_find[elemento][0])
+        return union_find[elemento][0]
+
+    def union(union_find, a, b):
+        if union_find[a][1] < union_find[b][1]:
+            union_find[a][0] = b
+        elif union_find[b][1] < union_find[a][1]:
+            union_find[b][0] = a
+        else:
+            union_find[b][0] = a
+            union_find[a][1] += 1
+
+    objetivo = matriz_celulas[-1]
+
+    # Cria uma lista com todas as arestas da matriz
+    arestas = []
+    for celula in matriz_celulas:
+        vizinhos = celula.checar_vizinhos(matriz_celulas, linhas, colunas, aleatorio=False)
+        celula.visitada = True
+        for vizinho in vizinhos:
+            arestas.append([celula, vizinho])
+
+    # Cria uma arvore de profundidade 0 no union find para cada celula
+    for celula in matriz_celulas:
+        union_find[celula] = [celula, 1]
+        celula.visitada = False
+
+
+    global FPS, texto_tempo, rect_tempo, texto_relogio, rect_texto_relogio, texto_recorde, rect_recorde, texto_valor_recorde, rect_valor_recorde
+
+    # Enquanto ainda tem arestas na lista
+    while arestas:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+        # Escolhe uma aresta aleatória e remove ela da lista
+        celula_atual, proxima_celula = choice(arestas)
+        celula_atual.visitada = True
+        proxima_celula.visitada = True
+        arestas.remove([celula_atual, proxima_celula])
+
+        # Desenha as celulas
+        [celula.desenhar(tela, cor="white", TILE=TILE) for celula in matriz_celulas]
+
+        # Desenha a celula atual e a de objetivo
+        celula_atual.preencher_celula(tela=tela, cor='red', TILE=TILE)
+        objetivo.preencher_celula(tela=tela, cor='green', TILE=TILE)
+
+        # Faz o find das células da aresta atual
+        find_atual = find(union_find, celula_atual)
+        find_prox = find(union_find, proxima_celula)
+
+        # Se elas forem de arvores diferentes, remove a parede entre elas e faz o union
+        if find_atual != find_prox:
+            remove_paredes(celula_atual, proxima_celula)
+            union(union_find, find_atual, find_prox)
+
+        # Desenha o tempo e o recorde
+        tela.blit(texto_tempo, rect_tempo)
+        tela.blit(texto_relogio, rect_texto_relogio)
+
+        tela.blit(texto_recorde, rect_recorde)
+        tela.blit(texto_valor_recorde, rect_valor_recorde)
+
+        pygame.display.update()
+        clock.tick(FPS)
+
+    # Roda mais um frame para transição pra gameplay ficar mais fluída    
+    [celula.desenhar(tela, cor="white", TILE=TILE) for celula in matriz_celulas]
+    matriz_celulas[0].preencher_celula(tela=tela, cor='red', TILE=TILE)
+    pygame.display.update()
+    clock.tick(FPS)
+
+    return matriz_celulas, tela_labirinto
+
+
+def criar_labirinto(algoritmo, qtd_tempo):
+    pygame.display.set_caption("MazeShapingTechniques - Modelando Labirinto")
+
+    global FPS
+    FPS = 300
+
+    # Preenche a tela inteira e tela do labirinto
+    tela_labirinto = pygame.Surface((WIDTH, HEIGHT))
+    tela.blit(fundo_menu, (0, 0))
+    tela.blit(tela_labirinto, (0, 0))
+
+    # Gera a matriz de celulas
+    matriz_celulas = [Celula(coluna, linha) for linha in range(linhas) for coluna in range(colunas)]
+
+    with open('recorde') as f:
+        global recorde
+        recorde = f.readline()
+
+    # Define o texto do tempo
+    global texto_tempo, rect_tempo, texto_relogio, rect_texto_relogio
+    texto_tempo = get_fonte(40).render('TEMPO', True, pygame.Color('white'))
+    rect_tempo = texto_tempo.get_rect(center=(WIDTH + 150, 50))
+    texto_relogio = get_fonte(40).render(f'{qtd_tempo}', True, pygame.Color('white'))
+    rect_texto_relogio = texto_relogio.get_rect(center=(WIDTH + 150, 100))
+
+    # Define o texto do recorde
+    global texto_recorde, rect_recorde, texto_valor_recorde, rect_valor_recorde
+    texto_recorde = get_fonte(40).render('RECORDE', True, pygame.Color('white'))
+    rect_recorde = texto_recorde.get_rect(center=(WIDTH + 150, 200))
+    texto_valor_recorde = get_fonte(40).render(f'{recorde}', True, pygame.Color('white'))
+    rect_valor_recorde = texto_valor_recorde.get_rect(center=(WIDTH + 150, 250))
+
+    # Chama a função específica pro algoritmo selecionado
+    match (algoritmo):
+        case (0):
+            return kruskal(matriz_celulas, tela_labirinto)
+        case (1):
+            return dfs(matriz_celulas, tela_labirinto)
+        case (2):
+            return dfs(matriz_celulas, tela_labirinto)
+
+
 def checa_colisao(rect_jogador, x, y, rect_paredes):
     rect_destino = rect_jogador.move(x, y)
     if rect_destino.collidelist(rect_paredes) == -1:
@@ -291,18 +358,63 @@ def checa_colisao(rect_jogador, x, y, rect_paredes):
     return True
 
 
+def tela_pausado():
+    global pausado, efeitos_sonoros, trilha_sonora
+
+    texto_menu = get_fonte(75).render("PAUSADO", True, "#ffffff")
+    rect_menu = texto_menu.get_rect(center=(790, 75))
+
+    botao_continuar = Botao(fundo=None, posicao=(790, 300), texto_base="Continuar", fonte=get_fonte(75), cor_base="#e3e3e3", cor_selecao="#ffffff")
+    botao_reiniciar = Botao(fundo=None, posicao=(790, 450), texto_base="Reiniciar", fonte=get_fonte(75), cor_base="#e3e3e3", cor_selecao="#ffffff")
+
+    while True:
+        botao_trilha_sonora = Botao(fundo=None, posicao=(1300, 630), texto_base="sons: on" if trilha_sonora else "sons: off", fonte=get_fonte(30), cor_base="#e3e3e3", cor_selecao="#ffffff")
+        botao_efeitos_sonoros = Botao(fundo=None, posicao=(1350, 660), texto_base="efeitos: on" if efeitos_sonoros else "efeitos: off", fonte=get_fonte(30), cor_base="#e3e3e3", cor_selecao="#ffffff")
+
+        tela.blit(fundo_menu, (0, 0))
+        tela.blit(texto_menu, rect_menu)
+
+        posicao_mouse = pygame.mouse.get_pos()
+
+        for botao in [botao_continuar, botao_reiniciar, botao_trilha_sonora, botao_efeitos_sonoros]:
+            botao.mudarCor(posicao_mouse)
+            botao.atualizar(tela)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if botao_continuar.checarEntrada(posicao_mouse):
+                    tocar_som(efeitos_sonoros, som_clique)
+                    pausado = not pausado
+                    if trilha_sonora: pygame.mixer.music.unpause()
+                    return None
+                if botao_reiniciar.checarEntrada(posicao_mouse):
+                    return -1
+                if botao_trilha_sonora.checarEntrada(posicao_mouse):
+                    tocar_som(efeitos_sonoros, som_clique)
+                    trilha_sonora = not trilha_sonora
+                if botao_efeitos_sonoros.checarEntrada(posicao_mouse):
+                    tocar_som(efeitos_sonoros, som_clique)
+                    efeitos_sonoros = not efeitos_sonoros
+
+        pygame.display.update()
+
+
 def jogar(matriz_celulas, tela_labirinto, qtd_tempo):
     pygame.display.set_caption("MazeShapingTechniques - Jogo")
 
+    global FPS, pausado
+    # Define o estado do jogo (pausado: bool)
+    pausado = False
     FPS = 60
 
     celula_inicial = matriz_celulas[0]
     objetivo = matriz_celulas[-1]
-    # print(objetivo.x * TILE, objetivo.y * TILE, TILE, TILE)
-    # rect_objetivo = pygame.Rect(objetivo.x * TILE, objetivo.y * TILE, TILE, TILE)
-    rect_objetivo = pygame.Rect(objetivo.x * TILE, objetivo.y * TILE + 0.50 * TILE, TILE, TILE * 0.50)
+    rect_objetivo = pygame.Rect(objetivo.x * TILE + 0.50 * TILE, objetivo.y * TILE + 0.50 * TILE, TILE * 0.50, TILE * 0.50)
 
-    # Inicia o relogio em 90 e lanca um evento a cada segundo para atualizar ele
+    # Inicia o relogio de acordo com a dificuldade escolhida e lanca um evento a cada segundo para atualizar ele
     relogio = qtd_tempo
     pygame.time.set_timer(pygame.USEREVENT, 1000)
 
@@ -329,14 +441,17 @@ def jogar(matriz_celulas, tela_labirinto, qtd_tempo):
     fonte = get_fonte(40)
 
     # Cria botão de pause
-    global pausado, efeitos_sonoros
+    global efeitos_sonoros
     botao_pause = Botao(fundo=None, posicao=(1430, 350), texto_base="Pause", fonte=get_fonte(30), cor_base="#e3e3e3", cor_selecao="#ffffff")
 
-    #
+    # Definição do som de movimentação
     som_jogador = pygame.mixer.Sound("../assets/jogador_mov.mp3")
-    
+
     while True:
-        if pausado: tela_pausado()
+        if pausado:
+            codigo_retorno = tela_pausado()
+            if codigo_retorno == -1:
+                return -1, -1, -1
         else:
             tela.blit(fundo_menu, (0, 0))
             tela.blit(tela_labirinto, (0, 0))
@@ -378,7 +493,7 @@ def jogar(matriz_celulas, tela_labirinto, qtd_tempo):
             # Verifica se o tempo acabou
             if relogio < 0:
                 break
-        
+
             # Desenha o jogador
             tela.blit(imagem_jogador, rect_jogador)
 
@@ -461,8 +576,6 @@ def fimdejogo(relogio, recorde, qtd_tempo):
                     pygame.quit()
                     sys.exit()
 
-        
-
         pygame.display.update()
 
 
@@ -476,4 +589,7 @@ if __name__ == "__main__":
         qtd_tempo = menu_dificuldade()
         matriz_celulas, tela_labirinto = criar_labirinto(algoritmo, qtd_tempo)
         relogio, recorde, qtd_tempo = jogar(matriz_celulas, tela_labirinto, qtd_tempo)
+
+        # Checa se o jogo foi reiniciado pelo menu de pause
+        if relogio == -1 and recorde == -1 and qtd_tempo == -1: continue
         fimdejogo(relogio, recorde, qtd_tempo)
