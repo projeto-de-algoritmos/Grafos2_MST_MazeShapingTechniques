@@ -444,6 +444,7 @@ def jogar(matriz_celulas, tela_labirinto, qtd_tempo):
     global efeitos_sonoros
     botao_pause = Botao(fundo=None, posicao=(1430, 350), texto_base="Pause", fonte=get_fonte(30), cor_base="#e3e3e3", cor_selecao="#ffffff")
 
+
     # Definição do som de movimentação
     som_jogador = pygame.mixer.Sound("../assets/jogador_mov.mp3")
 
@@ -576,6 +577,8 @@ def fimdejogo(relogio, recorde, qtd_tempo):
                     pygame.quit()
                     sys.exit()
 
+        
+
         pygame.display.update()
 
 
@@ -592,4 +595,3 @@ if __name__ == "__main__":
 
         # Checa se o jogo foi reiniciado pelo menu de pause
         if relogio == -1 and recorde == -1 and qtd_tempo == -1: continue
-        fimdejogo(relogio, recorde, qtd_tempo)
