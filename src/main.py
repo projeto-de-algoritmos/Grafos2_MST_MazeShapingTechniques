@@ -589,3 +589,5 @@ if __name__ == "__main__":
 
         # Checa se o jogo foi reiniciado pelo menu de pause
         if relogio == -1 and recorde == -1 and qtd_tempo == -1: continue
+
+        fimdejogo(relogio, recorde, qtd_tempo)
